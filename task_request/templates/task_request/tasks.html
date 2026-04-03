@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title> Tabs Task Manager</title>
+<!-- Google Fonts for a modern, clean look -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: #f0f0f0; /* Light, clean background */
+    color: #333;
+    line-height: 1.6;
+  }
+
+  h1 {
+    text-align: center;
+    margin: 40px 20px 20px 20px;
+    font-size: 2.5em;
+    color: #2c3e50;
+  }
+
+  /* Container for the vertical form */
+  .vertical-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    max-width: 400px;
+    margin: auto;
+  }
+
+  /* Each input group */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  label {
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 0.95em;
+  }
+
+  input[type="text"], textarea, input[type="date"], select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    width: 100%;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  input[type="text"]:focus, textarea:focus, input[type="date"]:focus, select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.2);
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 14px 24px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+  }
+
+  /* Tasks grid */
+  #taskContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1300px;
+    margin: auto;
+  }
+
+  /* Task card style */
+  .task-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .task-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #2c3e50;
+    flex: 1;
+  }
+
+  /* Buttons inside task card */
+  .task-btn {
+    background-color: grey;
+    border: none;
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 0.9em;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+  }
+
+  .task-btn:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+
+  /* Completed task style */
+  .completed {
+    text-decoration: line-through;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+
+<h1> Task Manager</h1>
+
+<!-- All input fields stacked vertically -->
+<div class="vertical-form">
+  <div class="form-group">
+    <label for="taskTitle">Task Title</label>
+    <input type="text" id="taskTitle" placeholder="Enter task title" />
+  </div>
+  <div class="form-group">
+    <label for="taskDesc">Description</label>
+    <textarea id="taskDesc" placeholder="Enter description" rows="2"></textarea>
+  </div>
+  <div class="form-group">
+    <label for="taskDeadline">Deadline</label>
+    <input type="date" id="taskDeadline" />
+  </div>
+  <div class="form-group">
+    <label for="taskPriority">Priority</label>
+    <select id="taskPriority">
+      <option value="">Select priority</option>
+      <option value="Low">Low</option>
+      <option value="Normal">Normal</option>
+      <option value="High">High</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="taskUser">Assign User</label>
+    <select id="taskUser">
+      <option value="">Select user</option>
+      <option value="Alice">Alice</option>
+      <option value="Bob">Bob</option>
+      <option value="Charlie">Charlie</option>
+      <option value="Diana">Diana</option>
+    </select>
+  </div>
+  <button onclick="addTask()">Add Task</button>
+</div>
+
+<!-- Task list -->
+<div id="taskContainer"></div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+function saveTasks() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function addTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  const desc = document.getElementById('taskDesc').value.trim();
+  const deadline = document.getElementById('taskDeadline').value;
+  const priority = document.getElementById('taskPriority').value;
+  const user = document.getElementById('taskUser').value;
+
+  if (!title) {
+    alert('Please enter a task title.');
+    return;
+  }
+
+  const task = {
+    id: Date.now(),
+    title,
+    desc,
+    deadline,
+    priority,
+    user,
+    completed: false,
+  };
+
+  tasks.push(task);
+  saveTasks();
+
+  // Reset form
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskDesc').value = '';
+  document.getElementById('taskDeadline').value = '';
+  document.getElementById('taskPriority').value = '';
+  document.getElementById('taskUser').value = '';
+
+  renderTasks();
+}
+
+function renderTasks() {
+  const container = document.getElementById('taskContainer');
+  container.innerHTML = '';
+
+  tasks.forEach(task => {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+
+    const header = document.createElement('div');
+    header.className = 'task-header';
+
+    const title = document.createElement('div');
+    title.className = 'task-title';
+    title.textContent = task.title;
+    if (task.completed) title.classList.add('completed');
+
+    const btnsDiv = document.createElement('div');
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'task-btn';
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = () => toggleEdit(task.id);
+
+    const completeBtn = document.createElement('button');
+    completeBtn.className = 'task-btn';
+    completeBtn.textContent = task.completed ? 'Undo' : 'Done';
+    completeBtn.onclick = () => toggleComplete(task.id);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'task-btn';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.onclick = () => deleteTask(task.id);
+
+    btnsDiv.appendChild(editBtn);
+    btnsDiv.appendChild(completeBtn);
+    btnsDiv.appendChild(deleteBtn);
+
+    header.appendChild(title);
+    header.appendChild(btnsDiv);
+    card.appendChild(header);
+
+    // Details
+    const details = document.createElement('div');
+    details.className = 'task-details';
+
+    if (task.user) {
+      const userP = document.createElement('p');
+      userP.innerHTML = `<strong>Assigned to:</strong> ${task.user}`;
+      details.appendChild(userP);
+    }
+    const descP = document.createElement('p');
+    descP.innerHTML = `<strong>Description:</strong> ${task.desc || 'No description'}`;
+    const deadlineP = document.createElement('p');
+    deadlineP.innerHTML = `<strong>Deadline:</strong> ${task.deadline || 'N/A'}`;
+    const priorityP = document.createElement('p');
+    priorityP.innerHTML = `<strong>Priority:</strong> ${task.priority || 'Normal'}`;
+
+    details.appendChild(descP);
+    details.appendChild(deadlineP);
+    details.appendChild(priorityP);
+
+    card.appendChild(details);
+    container.appendChild(card);
+  });
+}
+
+function toggleComplete(id) {
+  tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+  saveTasks();
+  renderTasks();
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  saveTasks();
+  renderTasks();
+}
+
+function toggleEdit(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  const cards = document.querySelectorAll('.task-card');
+  cards.forEach(card => {
+    const titleDiv = card.querySelector('.task-title');
+    if (titleDiv && titleDiv.textContent === task.title) {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = task.title;
+      input.style.width = '100%';
+      input.onkeydown = e => {
+        if (e.key === 'Enter') saveEdit(id, input.value);
+      };
+      input.onblur = () => saveEdit(id, input.value);
+      titleDiv.replaceWith(input);
+      input.focus();
+    }
+  });
+}
+
+function saveEdit(id, newTitle) {
+  newTitle = newTitle.trim();
+  if (newTitle === '') {
+    alert('Title cannot be empty.');
+    renderTasks();
+    return;
+  }
+  tasks = tasks.map(t => t.id === id ? { ...t, title: newTitle } : t);
+  saveTasks();
+  renderTasks();
+}
+
+// Initialize
+renderTasks();
+</script>
+
+</body>
+</html>

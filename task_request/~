@@ -1,0 +1,49 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from .models import Task, Request
+from .forms import TaskForm  # Make sure you have a TaskForm in forms.py
+
+# Home page
+def home(request):
+    # Loads task_request/templates/task_request/home.html
+    return render(request, 'task_request/home.html')
+
+# Task page
+def task_page(request):
+    tasks = Task.objects.all().order_by('-created_at')
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('task_page')
+    else:
+        form = TaskForm()
+
+    return render(request, 'task_request/tasks.html', {'tasks': tasks, 'form': form})
+
+# Mark task as complete/incomplete
+def complete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.completed = not task.completed
+    task.save()
+    return redirect('task_page')
+
+# Delete a task
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.delete()
+    return redirect('task_page')
+
+# Requests page (placeholder)
+def request_page(request):
+    return HttpResponse("This is the Request Page")
+
+# List all requests
+def request_list(request):
+    requests = Request.objects.all()
+    return render(request, 'task_request/request_list.html', {'requests': requests})
+
+# Alias for task_page
+def tasks(request):
+    return redirect('task_page')
+

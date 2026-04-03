@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task List</title>
+</head>
+<body>
+<h1>Tasks</h1>
+<a href="{% url 'task_create' %}">Add New Task</a>
+<ul>
+    {% for task in tasks %}
+    <li>
+        {% if task.completed %}<s>{{ task.title }}</s>{% else %}{{ task.title }}{% endif %}
+        [<a href="{% url 'task_update' task.pk %}">Edit</a>]
+        [<a href="{% url 'task_delete' task.pk %}">Delete</a>]
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        a.button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        a.button:hover {
+            background-color: #218838;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        li {
+            background: #fff;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .title {
+            font-size: 18px;
+        }
+        .actions a {
+            margin-left: 10px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+        }
+        .actions a.edit {
+            background-color: #007bff;
+        }
+        .actions a.edit:hover {
+            background-color: #0069d9;
+        }
+        .actions a.delete {
+            background-color: #dc3545;
+        }
+        .actions a.delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+<h1>Tasks</h1>
+<a class="button" href="{% url 'task_create' %}">Add New Task</a>
+<ul>
+    {% for task in tasks %}
+    <li>
+        <div class="title">{% if task.completed %}<s>{{ task.title }}</s>{% else %}{{ task.title }}{% endif %}</div>
+        <div class="actions">
+            <a class="edit" href="{% url 'task_update' task.pk %}">Edit</a>
+            <a class="delete" href="{% url 'task_delete' task.pk %}">Delete</a>
+        </div>
+    </li>
+    {% empty %}
+    <li>No tasks available.</li>
+    {% endfor %}
+</ul>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!DOCTYPE html>
+<html>
+<head>
+    <title>Task List</title>
+</head>
+<body>
+<h1>Tasks</h1>
+<a href="{% url 'task_create' %}">Add New Task</a>
+<ul>
+    {% for task in tasks %}
+    <li>
+        {% if task.completed %}<s>{{ task.title }}</s>{% else %}{{ task.title }}{% endif %}
+        [<a href="{% url 'task_update' task.pk %}">Edit</a>]
+        [<a href="{% url 'task_delete' task.pk %}">Delete</a>]
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        a.button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        a.button:hover {
+            background-color: #218838;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        li {
+            background: #fff;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .title {
+            font-size: 18px;
+        }
+        .actions a {
+            margin-left: 10px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+        }
+        .actions a.edit {
+            background-color: #007bff;
+        }
+        .actions a.edit:hover {
+            background-color: #0069d9;
+        }
+        .actions a.delete {
+            background-color: #dc3545;
+        }
+        .actions a.delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+<h1>Tasks</h1>
+<a class="button" href="{% url 'task_create' %}">Add New Task</a>
+<ul>
+    {% for task in tasks %}
+    <li>
+        <div class="title">{% if task.completed %}<s>{{ task.title }}</s>{% else %}{{ task.title }}{% endif %}</div>
+        <div class="actions">
+            <a class="edit" href="{% url 'task_update' task.pk %}">Edit</a>
+            <a class="delete" href="{% url 'task_delete' task.pk %}">Delete</a>
+        </div>
+    </li>
+    {% empty %}
+    <li>No tasks available.</li>
+    {% endfor %}
+</ul>
+</body>
+</html>
+
+
