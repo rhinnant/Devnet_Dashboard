@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Requests & Feedback</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #eef2f3;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2196F3;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    header button {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      background-color: #1976D2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: background 0.3s;
+    }
+
+    header button:hover {
+      background-color: #1565C0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      margin: 0 4px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-add { background-color: #4CAF50; color: white; }
+    .btn-edit { background-color: #FFC107; color: white; }
+    .btn-delete { background-color: #f44336; color: white; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      overflow-x: auto;
+      display: block;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      color: white;
+      font-size: 0.8em;
+      display: inline-block;
+    }
+
+    .Pending { background-color: #FF9800; }
+    .InProgress { background-color: #2196F3; }
+    .Completed { background-color: #4CAF50; }
+
+    .feedback-form {
+      margin-top: 30px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-form input, 
+    .feedback-form textarea, 
+    .feedback-form select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
+
+    .feedback-form input:focus, 
+    .feedback-form textarea:focus, 
+    .feedback-form select:focus {
+      border-color: #2196F3;
+      outline: none;
+    }
+
+    .feedback-form button {
+      background-color: #2196F3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      margin-right: 10px;
+    }
+
+    .feedback-form button:hover {
+      background-color: #1976D2;
+      transform: translateY(-1px);
+    }
+
+    /* Responsive table */
+    @media(max-width: 768px){
+      table, thead, tbody, th, td, tr { display: block; }
+      th, td { box-sizing: border-box; width: 100%; }
+      th { background-color: transparent; color: #555; text-align: right; padding-right: 50%; }
+      td { text-align: right; padding-left: 50%; position: relative; }
+      td::before { 
+        content: attr(data-label); 
+        position: absolute; 
+        left: 0; 
+        width: 50%; 
+        padding-left: 15px; 
+        font-weight: bold;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>User Requests & Feedback Management</h1>
+    <button onclick="window.history.back()">Back</button>
+  </header>
+  
+  <div class="container">
+    <button class="btn btn-add" onclick="showAddForm()">Add New Request</button>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>User</th>
+          <th>Request</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="requestTableBody"></tbody>
+    </table>
+
+    <div id="requestFormContainer" class="feedback-form">
+      <h2 id="formTitle">Add New Request</h2>
+      <form id="requestForm" onsubmit="saveRequest(event)">
+        <input type="hidden" id="requestId" />
+        <label for="userName">User Name:</label>
+        <input type="text" id="userName" required />
+
+        <label for="requestText">Request / Feedback:</label>
+        <textarea id="requestText" rows="4" required></textarea>
+
+        <label for="status">Status:</label>
+        <select id="status" required>
+          <option value="">Select status</option>
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+
+        <button type="submit">Save</button>
+        <button type="button" onclick="hideForm()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let requests = [
+      {id: 1, user: 'Alice', requestText: 'Add dark mode', status: 'Pending'},
+      {id: 2, user: 'Bob', requestText: 'Improve loading speed', status: 'In Progress'}
+    ];
+
+    function renderTable() {
+      const tbody = document.getElementById('requestTableBody');
+      tbody.innerHTML = '';
+      requests.forEach(req => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td data-label="ID">${req.id}</td>
+          <td data-label="User">${req.user}</td>
+          <td data-label="Request">${req.requestText}</td>
+          <td data-label="Status"><span class="status-badge ${req.status.replace(' ', '')}">${req.status}</span></td>
+          <td data-label="Actions">
+            <button class="btn btn-edit" onclick="editRequest(${req.id})">Edit</button>
+            <button class="btn btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showAddForm() {
+      document.getElementById('requestForm').reset();
+      document.getElementById('requestId').value = '';
+      document.getElementById('formTitle').innerText = 'Add New Request';
+      document.getElementById('requestFormContainer').style.display = 'block';
+    }
+
+    function hideForm() {
+      document.getElementById('requestFormContainer').style.display = 'none';
+    }
+
+    function saveRequest(e) {
+      e.preventDefault();
+      const id = document.getElementById('requestId').value;
+      const user = document.getElementById('userName').value;
+      const requestText = document.getElementById('requestText').value;
+      const status = document.getElementById('status').value;
+
+      if (id) {
+        const req = requests.find(r => r.id == id);
+        req.user = user;
+        req.requestText = requestText;
+        req.status = status;
+      } else {
+        const newId = requests.length ? Math.max(...requests.map(r => r.id)) + 1 : 1;
+        requests.push({id: newId, user, requestText, status});
+      }
+
+      renderTable();
+      hideForm();
+    }
+
+    function editRequest(id) {
+      const req = requests.find(r => r.id === id);
+      if (req) {
+        document.getElementById('requestId').value = req.id;
+        document.getElementById('userName').value = req.user;
+        document.getElementById('requestText').value = req.requestText;
+        document.getElementById('status').value = req.status;
+        document.getElementById('formTitle').innerText = 'Edit Request';
+        document.getElementById('requestFormContainer').style.display = 'block';
+      }
+    }
+
+    function deleteRequest(id) {
+      requests = requests.filter(r => r.id !== id);
+      renderTable();
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
