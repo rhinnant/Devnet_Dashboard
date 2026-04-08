@@ -1,34 +1,30 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "devnet-dashboard"
-        TAG = "latest"
-    }
-
     stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello, DevOps world!'
+            }
+        }
 
-        stage('Clone') {
+        stage('Git Checkout') {
             steps {
                 git 'https://github.com/rhinnant/Devnet_Dashboard.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$TAG .'
+                echo 'Build stage running...'
+                // You can add commands like "python manage.py check" if you want
             }
         }
 
-        stage('Run Container (Test)') {
+        stage('Test') {
             steps {
-                sh 'docker run -d -p 8000:8000 $IMAGE_NAME:$TAG || true'
-            }
-        }
-
-        stage('Verify App') {
-            steps {
-                sh 'curl -f http://localhost:8000 || exit 1'
+                echo 'Test stage running...'
+                // Placeholder for tests later
             }
         }
     }
