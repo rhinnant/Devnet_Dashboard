@@ -1,22 +1,34 @@
-pipeline {                     
-    agent any  // run on any available agent
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "devnet-dashboard"
+        TAG = "latest"
+    }
 
     stages {
-        stage('Build') {  // build stage
+
+        stage('Clone') {
             steps {
-                sh 'echo Building Project'
+                git 'https://github.com/rhinnant/Devnet_Dashboard.git'
             }
         }
 
-        stage('Test') {  // test stage
+        stage('Build Docker Image') {
             steps {
-                sh 'echo Running Tests'
+                sh 'docker build -t $IMAGE_NAME:$TAG .'
             }
         }
 
-        stage('Deploy') {  // deploy stage
+        stage('Run Container (Test)') {
             steps {
-                sh 'echo Deploying Application'
+                sh 'docker run -d -p 8000:8000 $IMAGE_NAME:$TAG || true'
+            }
+        }
+
+        stage('Verify App') {
+            steps {
+                sh 'curl -f http://localhost:8000 || exit 1'
             }
         }
     }
