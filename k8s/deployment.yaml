@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: django
-          image: ticket-system
-          imagePullPolicy: Never
+          image: ghcr.io/rhinnant/django-app:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:
