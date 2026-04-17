@@ -1,28 +1,10 @@
-name: CI Pipeline - Build Docker Image
+- name: Set IMAGE TAG
+  run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
 
-on:
-  push:
-    branches:
-      - ci-cd-setup
+- name: Build Docker image
+  run: |
+    docker build -t ghcr.io/rhinnant/django-app:${{ env.IMAGE_TAG }} .
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build Docker image
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/django-app:latest .
-
-    - name: Push Docker image
-      run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/django-app:latest
+- name: Push Docker image
+  run: |
+    docker push ghcr.io/rhinnant/django-app:${{ env.IMAGE_TAG }}
