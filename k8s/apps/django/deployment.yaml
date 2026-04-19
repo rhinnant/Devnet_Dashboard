@@ -13,8 +13,8 @@ spec:
         app: django-app
     spec:
       containers:
-      - image: ghcr.io/rhinnant/django-app:latest
+      - name: django
+        image: ghcr.io/rhinnant/django-app:latest
         imagePullPolicy: Always
-        imagePullPolicy: Never
         ports:
         - containerPort: 8080
