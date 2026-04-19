@@ -1,0 +1,143 @@
+import requests
+from django.shortcuts import render
+from django.http import JsonResponse
+import subprocess
+import json
+
+PROMETHEUS_URL = "http://localhost:9090"
+LOKI_URL = "http://localhost:3100"
+ALERTMANAGER_URL = "http://localhost:9093"
+
+
+def get_prometheus(query):
+    try:
+        r = requests.get(f"{PROMETHEUS_URL}/api/v1/query", params={"query": query}, timeout=3)
+        data = r.json()
+        result = data.get("data", {}).get("result", [])
+        if result:
+            return float(result[0]["value"][1])
+        return 0
+    except:
+        return None
+
+
+def dashboard(request):
+    return render(request, "monitor/dashboard.html")
+
+
+def api_metrics(request):
+    cpu = get_prometheus('100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)')
+    memory_used = get_prometheus('(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100')
+    pods_running = get_prometheus('count(kube_pod_status_phase{phase="Running"})')
+    pods_pending = get_prometheus('count(kube_pod_status_phase{phase="Pending"})')
+
+    return JsonResponse({
+        "cpu": round(cpu, 2) if cpu is not None else "N/A",
+        "memory": round(memory_used, 2) if memory_used is not None else "N/A",
+        "pods_running": int(pods_running) if pods_running is not None else "N/A",
+        "pods_pending": int(pods_pending) if pods_pending is not None else 0,
+    })
+
+
+def api_logs(request):
+    namespace = request.GET.get("namespace", "monitoring")
+    try:
+        r = requests.get(
+            f"{LOKI_URL}/loki/api/v1/query_range",
+            params={
+                "query": f'{{namespace="{namespace}"}}',
+                "limit": 100,
+                "direction": "backward"
+            },
+            timeout=3
+        )
+        data = r.json()
+        logs = []
+        for stream in data.get("data", {}).get("result", []):
+            for ts, line in stream.get("values", []):
+                logs.append({
+                    "timestamp": ts,
+                    "stream": stream.get("stream", {}),
+                    "line": line
+                })
+        logs.sort(key=lambda x: x["timestamp"], reverse=True)
+        return JsonResponse({"logs": logs[:100]})
+    except Exception as e:
+        return JsonResponse({"logs": [], "error": str(e)})
+
+
+def api_pods(request):
+    try:
+        result = subprocess.run(
+            ["kubectl", "get", "pods", "--all-namespaces", "-o", "json"],
+            capture_output=True, text=True, timeout=10
+        )
+        data = json.loads(result.stdout)
+        pods = []
+        for item in data.get("items", []):
+            container_statuses = item["status"].get("containerStatuses", [])
+            pods.append({
+                "name": item["metadata"]["name"],
+                "namespace": item["metadata"]["namespace"],
+                "status": item["status"].get("phase", "Unknown"),
+                "ready": sum(1 for c in container_statuses if c.get("ready")),
+                "total": len(container_statuses),
+                "restarts": sum(c.get("restartCount", 0) for c in container_statuses),
+                "age": item["metadata"].get("creationTimestamp", ""),
+            })
+        return JsonResponse({"pods": pods})
+    except Exception as e:
+        return JsonResponse({"pods": [], "error": str(e)})
+
+
+def api_pod_logs(request):
+    name = request.GET.get("name", "")
+    namespace = request.GET.get("namespace", "default")
+    if not name:
+        return JsonResponse({"logs": "", "error": "Pod name required"})
+    try:
+        result = subprocess.run(
+            ["kubectl", "logs", name, "-n", namespace, "--tail=100"],
+            capture_output=True, text=True, timeout=10
+        )
+        logs = result.stdout or result.stderr or "No logs available"
+        return JsonResponse({"logs": logs})
+    except Exception as e:
+        return JsonResponse({"logs": "", "error": str(e)})
+
+
+def api_pod_describe(request):
+    name = request.GET.get("name", "")
+    namespace = request.GET.get("namespace", "default")
+    if not name:
+        return JsonResponse({"output": "", "error": "Pod name required"})
+    try:
+        result = subprocess.run(
+            ["kubectl", "describe", "pod", name, "-n", namespace],
+            capture_output=True, text=True, timeout=10
+        )
+        output = result.stdout or result.stderr or "No output"
+        return JsonResponse({"output": output})
+    except Exception as e:
+        return JsonResponse({"output": "", "error": str(e)})
+
+
+def api_alerts(request):
+    try:
+        r = requests.get(f"{ALERTMANAGER_URL}/api/v2/alerts", timeout=3)
+        data = r.json()
+        alerts = []
+        for a in data:
+            labels = a.get("labels", {})
+            annotations = a.get("annotations", {})
+            alerts.append({
+                "name": labels.get("alertname", "Unknown"),
+                "severity": labels.get("severity", "info"),
+                "state": a.get("status", {}).get("state", "unknown"),
+                "summary": annotations.get("summary", ""),
+                "description": annotations.get("description", ""),
+                "labels": labels,
+            })
+        return JsonResponse({"alerts": alerts})
+    except Exception as e:
+        return JsonResponse({"alerts": [], "error": str(e)})

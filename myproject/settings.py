@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'notifications',
     'network_api',
     'core',
+    'monitor',
     'rest_framework',
 ]
 

@@ -31,6 +31,7 @@ urlpatterns = [
     path('notifications/', include('notifications.urls')),
     path('', include('network_api.urls')),
     path('', include('core.urls')),
+    path('', include('monitor.urls')),
     #redirected view request to the new link ticket/api
     path('view_request/', lambda request: redirect('/tickets/api/')),
 ]
