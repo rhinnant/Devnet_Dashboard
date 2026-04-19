@@ -18,6 +18,8 @@ spec:
           enabled: true
         grafana:
           enabled: false
+        grafana-sc-datasources:
+          isDefault: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
