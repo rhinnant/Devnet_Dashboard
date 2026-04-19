@@ -13,8 +13,8 @@ spec:
         app: django-app
     spec:
       containers:
-      - name: django
-        image: devnet_app
+      - image: ghcr.io/rhinnant/django-app:latest
+        imagePullPolicy: Always
         imagePullPolicy: Never
         ports:
         - containerPort: 8080
