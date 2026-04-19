@@ -3,15 +3,14 @@ kind: Ingress
 metadata:
   name: django-ingress
 spec:
-  ingressClassName: nginx
   rules:
-  - host: tickets.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: django-service
-            port:
-              number: 8080
+    - host: django.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: django-service
+                port:
+                  number: 80

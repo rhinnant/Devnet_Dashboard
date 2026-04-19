@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: django-app
+  labels:
+    app: django-app
 spec:
   replicas: 1
   selector:
@@ -13,8 +15,8 @@ spec:
         app: django-app
     spec:
       containers:
-      - name: django
-        image: ghcr.io/rhinnant/django-app:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8080
+        - name: django
+          image: nginx:latest   # SAFE placeholder (replace later with GHCR)
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
