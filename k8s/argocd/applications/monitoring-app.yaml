@@ -17,6 +17,13 @@ spec:
         grafana:
           enabled: true
           adminPassword: admin
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              access: proxy
+              url: http://loki.monitoring:3100
+              isDefault: false
+              editable: true
         prometheus:
           enabled: true
   destination:
