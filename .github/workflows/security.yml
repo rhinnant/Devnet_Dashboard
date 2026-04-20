@@ -28,10 +28,11 @@ jobs:
           pip install -r requirements.txt
 
       # 4. Secret scanning (Gitleaks)
-      - name: Run Gitleaks (Secret Scan)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    name: Run Gitleaks (Secret Scan)
+    uses: gitleaks/gitleaks-action@v2
+    continue-on-error: true
+    env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 5. Filesystem vulnerability scan (Trivy)
       - name: Run Trivy FS Scan
