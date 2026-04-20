@@ -23,5 +23,3 @@ urlpatterns = [
     path('tickets/', include('tickets.urls')),
     path('', views.home, name='home'),
 ]
-
-

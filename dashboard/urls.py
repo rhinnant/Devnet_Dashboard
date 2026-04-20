@@ -7,4 +7,3 @@ urlpatterns = [
     path('<int:ticket_id>/', views.ticket_detail, name='ticket_detail'),
     path('<int:ticket_id>/update/', views.ticket_update, name='ticket_update'),
 ]
-

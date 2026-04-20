@@ -57,4 +57,3 @@ def task_page(request):
 
 def request_page(request):
     return HttpResponse("This is the Request Page")
-

@@ -10,4 +10,3 @@ urlpatterns = [
     path('task/', views.task_page, name='task_page'),
     path('request/', views.request_page, name='request_page'),
 ]
-

@@ -25,5 +25,3 @@ urlpatterns = [
     path('', include('task_request.urls')),  # This loads your dashboard home
     path('', include('tasks.urls')),
 ]
-
-

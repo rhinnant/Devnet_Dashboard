@@ -1,5 +1,5 @@
 # Devnet_Dashboard
-how to setup my application 
+how to setup my application
 
 
 
@@ -62,7 +62,7 @@ Optional Tips:
    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Instructions on containeriing you application with Docker 
+Instructions on containeriing you application with Docker
 
 Step-by-Step Docker Instructions for Devnet_Dashboard
 
@@ -210,8 +210,3 @@ type: minikube Dashboard
 Note: This will show you the pods running inside your kubernetess cluster
 
 Have fun!!!!!!!
-
-
-
-
-

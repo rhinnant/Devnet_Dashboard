@@ -9,4 +9,3 @@ urlpatterns = [
     path('tasks/complete/<int:task_id>/', views.complete_task, name='complete_task'),
     path('tasks/delete/<int:task_id>/', views.delete_task, name='delete_task'),
 ]
-

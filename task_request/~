@@ -46,4 +46,3 @@ def request_list(request):
 # Alias for task_page
 def tasks(request):
     return redirect('task_page')
-
