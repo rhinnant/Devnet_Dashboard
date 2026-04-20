@@ -1,11 +1,7 @@
 # Devnet_Dashboard
 how to setup my application 
 
-requirements:
-1.) make a username 
-type:  useradd hinn
-type:  passwd hinn 
-password: 2wsx3edc@WSX#EDC
+
 
 Note: This repository should be made inside "hinn" username
 
