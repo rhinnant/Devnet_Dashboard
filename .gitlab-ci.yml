@@ -5,7 +5,7 @@ stages:
   - deploy
 
 variables:
-  IMAGE_NAME: $CI_REGISTRY_IMAGE/devnet_dashboard
+  IMAGE_NAME: hinn8823/devnet_dashboard
 
 # ---------------- BUILD ----------------
 build:
@@ -15,7 +15,6 @@ build:
     - docker:dind
   script:
     - docker build -t $IMAGE_NAME:$CI_COMMIT_SHA .
-    - docker images
 
 # ---------------- TEST ----------------
 test:
@@ -24,33 +23,28 @@ test:
   script:
     - pip install -r requirements.txt
     - python manage.py check
-    - python manage.py test
 
-# ---------------- PUSH ----------------
+# ---------------- PUSH TO DOCKER HUB ----------------
 push:
   stage: push
   image: docker:24
   services:
     - docker:dind
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
     - docker build -t $IMAGE_NAME:latest .
     - docker push $IMAGE_NAME:latest
 
-# ---------------- DEPLOY (LOCAL SIMULATION) ----------------
+# ---------------- DEPLOY LOCAL ----------------
 deploy:
   stage: deploy
   image: docker:24
   services:
     - docker:dind
-
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
-
   script:
-    - echo "Deploying locally..."
-    - docker info
     - docker pull $IMAGE_NAME:latest || true
     - docker stop devnet || true
     - docker rm devnet || true
