@@ -1,19 +1,47 @@
 stages:
-  - test
+  - build
   - deploy
 
-check-cluster:
-  stage: test
+variables:
+  IMAGE_NAME: test-app
+  IMAGE_TAG: latest
+
+# -------------------------
+# BUILD DOCKER IMAGE
+# -------------------------
+build-image:
+  stage: build
   tags:
     - local
   script:
-    - kubectl config current-context
-    - kubectl get nodes
+    - echo "=== BUILD STAGE ==="
 
-deploy-nginx:
+    - docker version
+
+    - echo "Building Docker image..."
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+    - echo "Listing images..."
+    - docker images | grep $IMAGE_NAME
+
+# -------------------------
+# DEPLOY TO MINIKUBE
+# -------------------------
+deploy-app:
   stage: deploy
   tags:
     - local
   script:
+    - echo "=== DEPLOY STAGE ==="
+
+    - kubectl config current-context
+    - kubectl get nodes
+
+    - echo "Applying Kubernetes manifest..."
     - kubectl apply -f k8s/test-deploy.yaml
+
+    - echo "Waiting for rollout..."
     - kubectl rollout status deployment/test-nginx
+
+    - echo "Showing pods..."
+    - kubectl get pods
