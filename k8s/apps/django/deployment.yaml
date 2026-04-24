@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: django
-          image: nginx:latest   # SAFE placeholder (replace later with GHCR)
+          image: registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem/django-app:latest  
+            # SAFE placeholder (replace later with GHCR)
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

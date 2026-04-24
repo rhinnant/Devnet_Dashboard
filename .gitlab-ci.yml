@@ -1,23 +1,37 @@
 stages:
+  - build
   - deploy
 
-deploy-local:
+variables:
+  IMAGE: registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem/django-app:latest
+
+# ---------------- BUILD IMAGE ----------------
+build-image:
+  stage: build
+  tags:
+    - local
+  script:
+    - echo "Logging into GitLab Registry..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+
+    - echo "Building image..."
+    - docker build -t $IMAGE .
+
+    - echo "Pushing image..."
+    - docker push $IMAGE
+
+# ---------------- DEPLOY TO MINIKUBE ----------------
+deploy:
   stage: deploy
   tags:
     - local
   script:
-    - echo "=== DEPLOYING TO MINIKUBE ==="
+    - echo "Deploying to Minikube..."
 
-    - whoami
     - kubectl config current-context
 
-    - echo "Applying deployment..."
-    - kubectl apply -f k8s/test-deploy.yaml
+    - echo "Updating deployment image..."
+    - sed -i "s|image: .*|image: $IMAGE|g" k8s/apps/django/deployment.yaml
 
-    - echo "Waiting for rollout..."
-    - kubectl rollout status deployment/test-nginx
-
-    - echo "Checking pods..."
-    - kubectl get pods
-
-    - echo "=== DEPLOY SUCCESS ==="
+    - kubectl apply -f k8s/apps/django/deployment.yaml
+    - kubectl rollout status deployment/django-app
