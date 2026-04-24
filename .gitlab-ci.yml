@@ -1,41 +1,25 @@
 stages:
   - build
-  - deploy
+  - push
 
 variables:
-  IMAGE_NAME: django-app
-  IMAGE_TAG: latest
+  IMAGE: registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem/django-app:latest
 
-# ---------------- BUILD ----------------
 build-image:
   stage: build
   tags:
     - local
   script:
     - echo "Building Docker image..."
+    - docker build -t $IMAGE .
 
-    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
-
-    - docker images | grep $IMAGE_NAME
-
-# ---------------- DEPLOY ----------------
-deploy:
-  stage: deploy
+push-image:
+  stage: push
   tags:
     - local
   script:
-    - echo "Deploying to Minikube..."
+    - echo "Logging into GitLab registry..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
-    - kubectl config current-context
-    - kubectl get nodes
-
-    - echo "Applying Kubernetes deployment..."
-    - kubectl apply -f k8s/test-deploy.yaml
-
-    - echo "Restarting deployment..."
-    - kubectl rollout restart deployment/django-app
-
-    - echo "Waiting for rollout..."
-    - kubectl rollout status deployment/django-app
-
-    - kubectl get pods
+    - echo "Pushing image..."
+    - docker push $IMAGE
