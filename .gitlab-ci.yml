@@ -11,13 +11,15 @@ build-image:
   tags:
     - local
   script:
+    - echo "=== BUILD STAGE ==="
+
     - echo "Logging into GitLab Registry..."
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
-    - echo "Building image..."
+    - echo "Building Docker image..."
     - docker build -t $IMAGE .
 
-    - echo "Pushing image..."
+    - echo "Pushing Docker image..."
     - docker push $IMAGE
 
 # ---------------- DEPLOY TO MINIKUBE ----------------
@@ -26,12 +28,18 @@ deploy:
   tags:
     - local
   script:
-    - echo "Deploying to Minikube..."
+    - echo "=== DEPLOY STAGE ==="
 
+    - echo "Checking kubectl context..."
     - kubectl config current-context
 
-    - echo "Updating deployment image..."
+    - echo "Applying Kubernetes deployment..."
     - sed -i "s|image: .*|image: $IMAGE|g" k8s/apps/django/deployment.yaml
 
     - kubectl apply -f k8s/apps/django/deployment.yaml
+
+    - echo "Waiting for rollout..."
     - kubectl rollout status deployment/django-app
+
+    - echo "Checking pods..."
+    - kubectl get pods
