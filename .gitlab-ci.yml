@@ -36,19 +36,13 @@ deploy:
   stage: deploy
   image:
     name: bitnami/kubectl:latest
-    entrypoint: [""]   # 🔥 FIX: prevents kubectl overriding shell
+    entrypoint: [""]
   script:
-    - echo "Setting up kubeconfig..."
+    - eval $(minikube docker-env)
 
-    - mkdir -p ~/.kube
-    - echo "$KUBECONFIG" > ~/.kube/config
+    - kubectl config use-context minikube
 
-    - echo "Updating deployment image..."
-    - |
-      sed -i "s|image: .*|image: $DOCKER_IMAGE|g" $KUBE_DEPLOY_FILE
+    - kubectl cluster-info
 
-    - echo "Applying Kubernetes manifests..."
     - kubectl apply -f $KUBE_DEPLOY_FILE
-
-    - echo "Waiting for rollout..."
     - kubectl rollout status deployment/django-app
