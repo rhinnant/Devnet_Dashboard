@@ -38,13 +38,13 @@ deploy:
     name: bitnami/kubectl:latest
     entrypoint: [""]
   script:
-    - mkdir -p ~/.kube
-    - echo "$KUBECONFIG" | base64 -d > ~/.kube/config
+  - mkdir -p ~/.kube
+  - echo "$KUBECONFIG" | base64 -d > ~/.kube/config
+  - export KUBECONFIG=$HOME/.kube/config
 
-    - export KUBECONFIG=$HOME/.kube/config
+  - kubectl config get-contexts
+  - kubectl config use-context minikube
 
-    - kubectl config current-context
-    - kubectl cluster-info
+  - kubectl cluster-info
 
-    - kubectl apply -f $KUBE_DEPLOY_FILE
-    - kubectl rollout status deployment/django-app
+  - kubectl apply -f k8s/apps/django/deployment.yaml
