@@ -1,25 +1,36 @@
 stages:
-  - build
-  - push
+  - build_and_push
+  - deploy
 
 variables:
   IMAGE: registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem/django-app:latest
 
-build-image:
-  stage: build
-  tags:
-    - local
-  script:
-    - echo "Building Docker image..."
-    - docker build -t $IMAGE .
+before_script:
+  - echo "Starting CI/CD pipeline..."
+  - ls -R
 
-push-image:
-  stage: push
+# ---------------- BUILD & PUSH ----------------
+build_and_push:
+  stage: build_and_push
   tags:
     - local
   script:
     - echo "Logging into GitLab registry..."
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
-    - echo "Pushing image..."
+    - echo "Building Docker image..."
+    - docker build -t $IMAGE .
+
+    - echo "Pushing Docker image..."
     - docker push $IMAGE
+
+# ---------------- DEPLOY ----------------
+deploy:
+  stage: deploy
+  tags:
+    - local
+  script:
+    - echo "Deploying to Minikube..."
+    - kubectl config current-context
+    - kubectl apply -f k8s/test-deploy.yaml
+    - kubectl rollout status deployment/django-app
