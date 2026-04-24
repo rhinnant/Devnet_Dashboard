@@ -1,49 +1,11 @@
-<<<<<<< HEAD
 stages:
-  - build
-  - deploy
+  - test
 
-variables:
-  IMAGE: registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem/django-app:latest
-
-# ---------------- BUILD IMAGE ----------------
-build-image:
-  stage: build
+test-job:
+  stage: test
   tags:
     - local
   script:
-    - echo "=== BUILD STAGE ==="
-
-    - echo "Logging into GitLab Registry..."
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-
-    - echo "Building Docker image..."
-    - docker build -t $IMAGE .
-
-    - echo "Pushing Docker image..."
-    - docker push $IMAGE
-
-# ---------------- DEPLOY TO MINIKUBE ----------------
-deploy:
-  stage: deploy
-  tags:
-    - local
-  script:
-    - echo "=== DEPLOY STAGE ==="
-
-    - echo "Checking kubectl context..."
-    - kubectl config current-context
-
-    - echo "Applying Kubernetes deployment..."
-    - sed -i "s|image: .*|image: $IMAGE|g" k8s/apps/django/deployment.yaml
-
-    - kubectl apply -f k8s/apps/django/deployment.yaml
-
-    - echo "Waiting for rollout..."
-    - kubectl rollout status deployment/django-app
-
-    - echo "Checking pods..."
-    - kubectl get pods
-=======
-stages: []
->>>>>>> bef12cf (reset pipeline)
+    - echo "PIPELINE IS WORKING"
+    - whoami
+    - hostname
