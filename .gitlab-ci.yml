@@ -4,8 +4,13 @@ stages:
 
 variables:
   DOCKER_IMAGE: devnet_dashboard_itdash:$CI_COMMIT_SHORT_SHA
+  DOCKERFILE_PATH: Dockerfile
+  BUILD_CONTEXT: .
   KUBE_DEPLOY_FILE: django-deploy1.yaml
 
+# -----------------------
+# BUILD STAGE (LOCAL IMAGE)
+# -----------------------
 build:
   stage: build
   image: docker:24.0.5
@@ -14,20 +19,36 @@ build:
   variables:
     DOCKER_TLS_CERTDIR: ""
   script:
-    - echo "Using Minikube Docker daemon..."
-    - eval $(minikube docker-env)
+    - echo "Building Docker image locally..."
 
-    - echo "Building image inside Minikube..."
-    - docker build -t $DOCKER_IMAGE .
+    # If using Minikube, this allows image to be used directly
+    - eval $(minikube docker-env) || true
 
+    - docker build -t $DOCKER_IMAGE -f $DOCKERFILE_PATH $BUILD_CONTEXT
+
+    - echo "Image built:"
+    - docker images | grep devnet_dashboard_itdash
+
+# -----------------------
+# DEPLOY STAGE (KUBERNETES)
+# -----------------------
 deploy:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]   # 🔥 FIX: prevents kubectl overriding shell
   script:
+    - echo "Setting up kubeconfig..."
+
     - mkdir -p ~/.kube
     - echo "$KUBECONFIG" > ~/.kube/config
 
-    - 'sed -i "s|image: .*|image: $DOCKER_IMAGE|g" $KUBE_DEPLOY_FILE'
+    - echo "Updating deployment image..."
+    - |
+      sed -i "s|image: .*|image: $DOCKER_IMAGE|g" $KUBE_DEPLOY_FILE
 
+    - echo "Applying Kubernetes manifests..."
     - kubectl apply -f $KUBE_DEPLOY_FILE
+
+    - echo "Waiting for rollout..."
     - kubectl rollout status deployment/django-app
