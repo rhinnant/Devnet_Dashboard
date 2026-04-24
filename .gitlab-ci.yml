@@ -40,9 +40,16 @@ push:
 # ---------------- DEPLOY (LOCAL SIMULATION) ----------------
 deploy:
   stage: deploy
+  image: docker:24
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   script:
     - echo "Deploying locally..."
+    - docker info
     - docker pull $IMAGE_NAME:latest || true
     - docker stop devnet || true
     - docker rm devnet || true
-    - docker run -d -p 8080:8000 --name devnet $IMAGE_NAME:latest
+    - docker run -d -p 8086:8000 --name devnet $IMAGE_NAME:latest
