@@ -1,11 +1,19 @@
 stages:
   - test
+  - deploy
 
-test-job:
+check-cluster:
   stage: test
   tags:
     - local
   script:
-    - echo "PIPELINE IS WORKING"
-    - whoami
-    - hostname
+    - kubectl config current-context
+    - kubectl get nodes
+
+deploy-nginx:
+  stage: deploy
+  tags:
+    - local
+  script:
+    - kubectl apply -f k8s/test-deploy.yaml
+    - kubectl rollout status deployment/test-nginx
