@@ -27,7 +27,7 @@ deploy:
     - mkdir -p ~/.kube
     - echo "$KUBECONFIG" > ~/.kube/config
 
-    - sed -i "s|image: .*|image: $DOCKER_IMAGE|g" $KUBE_DEPLOY_FILE
+    - 'sed -i "s|image: .*|image: $DOCKER_IMAGE|g" $KUBE_DEPLOY_FILE'
 
     - kubectl apply -f $KUBE_DEPLOY_FILE
     - kubectl rollout status deployment/django-app
