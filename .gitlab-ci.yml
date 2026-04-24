@@ -1,44 +1,33 @@
-hinn@kasie:~/Backup/my_it_dashboard-backup$ cat .gitlab-ci.yml
 stages:
-  - build_and_push
+  - build
   - deploy
 
 variables:
-  DOCKER_IMAGE: hinn8823/devnet_dashboard_itdash:latest
-  DOCKERFILE_PATH: Dockerfile
-  BUILD_CONTEXT: .
+  DOCKER_IMAGE: devnet_dashboard_itdash:$CI_COMMIT_SHORT_SHA
   KUBE_DEPLOY_FILE: django-deploy1.yaml
 
-before_script:
-  - echo "Starting CI/CD pipeline..."
-  - ls -R
-
-build_and_push:
-  stage: build_and_push
+build:
+  stage: build
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
   variables:
     DOCKER_TLS_CERTDIR: ""
   script:
-    - echo "Checking Dockerfile..."
-    - if [ ! -f "$DOCKERFILE_PATH" ]; then echo "Dockerfile not found! Aborting." && exit 1; fi
-    - echo "Logging in to DockerHub..."
-    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-    - echo "Building Docker image..."
-    - export DOCKER_BUILDKIT=1
-    - docker build -t $DOCKER_IMAGE -f $DOCKERFILE_PATH $BUILD_CONTEXT
-    - echo "Pushing Docker image..."
-    - docker push $DOCKER_IMAGE
-  only:
-    - main
+    - echo "Using Minikube Docker daemon..."
+    - eval $(minikube docker-env)
+
+    - echo "Building image inside Minikube..."
+    - docker build -t $DOCKER_IMAGE .
 
 deploy:
   stage: deploy
-  tags:
-    - local
+  image: bitnami/kubectl:latest
   script:
-    - echo "Deploying to Kubernetes..."
+    - mkdir -p ~/.kube
+    - echo "$KUBECONFIG" > ~/.kube/config
+
+    - sed -i "s|image: .*|image: $DOCKER_IMAGE|g" $KUBE_DEPLOY_FILE
+
     - kubectl apply -f $KUBE_DEPLOY_FILE
-  only:
-    - main
+    - kubectl rollout status deployment/django-app
