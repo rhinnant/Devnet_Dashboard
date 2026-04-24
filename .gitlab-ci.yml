@@ -3,48 +3,50 @@ stages:
   - deploy
 
 variables:
-  DOCKER_IMAGE: devnet_dashboard_itdash:$CI_COMMIT_SHORT_SHA
-  DOCKERFILE_PATH: Dockerfile
-  BUILD_CONTEXT: .
-  KUBE_DEPLOY_FILE: k8s/apps/django/deployment.yaml
+  DOCKER_IMAGE: hinn8823/devnet_dashboard_itdash:latest
 
-# -----------------------
-# BUILD STAGE (LOCAL IMAGE)
-# -----------------------
+# -------------------------
+# BUILD + PUSH
+# -------------------------
 build:
   stage: build
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
-  variables:
-    DOCKER_TLS_CERTDIR: ""
+  tags:
+    - local
   script:
-    - echo "Building Docker image locally..."
+    - echo "=== BUILD STAGE ==="
 
-    # If using Minikube, this allows image to be used directly
-    - eval $(minikube docker-env) || true
+    - docker --version
+    - docker info
 
-    - docker build -t $DOCKER_IMAGE -f $DOCKERFILE_PATH $BUILD_CONTEXT
+    - echo "Logging into DockerHub..."
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-    - echo "Image built:"
-    - docker images | grep devnet_dashboard_itdash
+    - echo "Building image..."
+    - docker build -t $DOCKER_IMAGE .
 
-# -----------------------
-# DEPLOY STAGE (KUBERNETES)
-# -----------------------
+    - echo "Pushing image..."
+    - docker push $DOCKER_IMAGE
+
+# -------------------------
+# DEPLOY TO MINIKUBE
+# -------------------------
 deploy:
   stage: deploy
-  image:
-    name: bitnami/kubectl:latest
-    entrypoint: [""]
+  tags:
+    - local
   script:
-  - mkdir -p ~/.kube
-  - echo "$KUBECONFIG" | base64 -d > ~/.kube/config
-  - export KUBECONFIG=$HOME/.kube/config
+    - echo "=== DEPLOY STAGE ==="
 
-  - kubectl config get-contexts
-  - kubectl config use-context minikube
+    - kubectl config current-context
+    - kubectl cluster-info
 
-  - kubectl cluster-info
+    - echo "Updating deployment image..."
+    - sed -i "s|image: .*|image: $DOCKER_IMAGE|g" k8s/apps/django/deployment.yaml
 
-  - kubectl apply -f k8s/apps/django/deployment.yaml
+    - echo "Applying Kubernetes manifests..."
+    - kubectl apply -f k8s/apps/django/deployment.yaml
+
+    - echo "Waiting for rollout..."
+    - kubectl rollout status deployment/django-app
+
+    - echo "=== DEPLOYMENT COMPLETE ==="
