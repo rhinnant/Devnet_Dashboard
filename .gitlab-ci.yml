@@ -6,7 +6,7 @@ variables:
   DOCKER_IMAGE: devnet_dashboard_itdash:$CI_COMMIT_SHORT_SHA
   DOCKERFILE_PATH: Dockerfile
   BUILD_CONTEXT: .
-  KUBE_DEPLOY_FILE: django-deploy1.yaml
+  KUBE_DEPLOY_FILE: k8s/apps/django/deployment.yaml
 
 # -----------------------
 # BUILD STAGE (LOCAL IMAGE)
