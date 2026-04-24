@@ -1,29 +1,29 @@
-# Use official Python slim image
+# Base image
 FROM python:3.11-slim
 
-# Set Python environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
+# Prevent python buffering logs
 ENV PYTHONUNBUFFERED=1
 
-# Set working directory
+# Work directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system deps
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    gcc \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python packages
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Install dependencies first (better caching)
+COPY requirements.txt .
 
-# Copy project code
-COPY . /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose Django port
-EXPOSE 8080
+# Copy project
+COPY . .
 
-# Run migrations and start Django server
-CMD ["gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "3"]
+# Expose port (IMPORTANT: match gunicorn)
+EXPOSE 8000
+
+# Run gunicorn (adjust "myproject.wsgi:application" if needed)
+CMD ["gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
