@@ -3,8 +3,15 @@ scan:
   image:
     name: aquasec/trivy:latest
     entrypoint: [""]
+  variables:
+    IMAGE: registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem:latest
+
   script:
-    - trivy image --format template --template "@contrib/gitlab.tpl" -o gl-container-scanning-report.json registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem:latest
+    - echo "Scanning image: $IMAGE"
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL --format json -o gl-container-scanning-report.json $IMAGE
+
   artifacts:
     reports:
       container_scanning: gl-container-scanning-report.json
+    paths:
+      - gl-container-scanning-report.json
