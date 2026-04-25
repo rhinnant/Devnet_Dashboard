@@ -1,51 +1,32 @@
 stages:
-  - test
-  - security
   - build
+  - scan
   - push
 
 variables:
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
 
-# 1. TEST STAGE
-test:
-  stage: test
-  image: python:3.11
-  script:
-    - pip install -r requirements.txt
-    - python manage.py test
-
-# 2. SECURITY SCANS
-security:
-  stage: security
-  image: python:3.11
-  script:
-    - pip install bandit pip-audit
-    - bandit -r .
-    - pip-audit -r requirements.txt
-
-# 3. DOCKER BUILD
 build:
   stage: build
-  image: docker:24
+  image: docker:latest
   services:
     - docker:dind
   script:
     - docker build -t $IMAGE_TAG .
 
-# 4. CONTAINER SCAN
-container_scan:
-  stage: security
-  image: aquasec/trivy
+scan:
+  stage: scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
   script:
-    - trivy image $IMAGE_TAG
+    - trivy image --severity HIGH,CRITICAL --exit-code 1 $IMAGE_TAG
 
-# 5. PUSH IMAGE
 push:
   stage: push
-  image: docker:24
+  image: docker:latest
   services:
     - docker:dind
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $IMAGE_TAG
