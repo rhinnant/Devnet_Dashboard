@@ -4,4 +4,4 @@ scan:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
-    - trivy image --username $CI_REGISTRY_USER --password $CI_REGISTRY_PASSWORD $CI_REGISTRY_IMAGE:latest
+    - trivy image registry.gitlab.com/reg.hinnant-group/enterprise_version_ticketsystem:latest
