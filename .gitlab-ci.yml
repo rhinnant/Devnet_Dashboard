@@ -1,7 +1,7 @@
 stages:
   - build
-  - scan
   - push
+  - scan
 
 variables:
   IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
@@ -14,14 +14,6 @@ build:
   script:
     - docker build -t $IMAGE_TAG .
 
-scan:
-  stage: scan
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy image --severity HIGH,CRITICAL --exit-code 1 $IMAGE_TAG
-
 push:
   stage: push
   image: docker:latest
@@ -30,3 +22,16 @@ push:
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $IMAGE_TAG
+
+scan:
+  stage: scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy image \
+      --username $CI_REGISTRY_USER \
+      --password $CI_REGISTRY_PASSWORD \
+      --severity HIGH,CRITICAL \
+      --exit-code 1 \
+      $IMAGE_TAG
