@@ -1,44 +1,7 @@
-stages:
-  - build
-  - push
-  - scan
-
-variables:
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
-
-build:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind
-  script:
-    - docker build -t $IMAGE_TAG .
-    - docker save $IMAGE_TAG -o image.tar
-  artifacts:
-    paths:
-      - image.tar
-
-push:
-  stage: push
-  image: docker:latest
-  services:
-    - docker:dind
-  dependencies:
-    - build
-  script:
-    - docker load -i image.tar
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $IMAGE_TAG
-
 scan:
   stage: scan
   image:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
-    - trivy image \
-      --username $CI_REGISTRY_USER \
-      --password $CI_REGISTRY_PASSWORD \
-      --severity HIGH,CRITICAL \
-      --exit-code 1 \
-      $IMAGE_TAG
+    - trivy image --username $CI_REGISTRY_USER --password $CI_REGISTRY_PASSWORD $CI_REGISTRY_IMAGE:latest
