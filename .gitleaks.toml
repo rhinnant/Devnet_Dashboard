@@ -1,0 +1,8 @@
+[allowlist]
+description = "ignore noise"
+paths = [
+  "venv/",
+  "node_modules/",
+  "dist/",
+  "build/"
+]

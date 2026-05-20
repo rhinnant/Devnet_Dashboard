@@ -1,0 +1,33 @@
+name: Security Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install safety bandit
+
+      - name: Django Check
+        run: python manage.py check
+
+      - name: Dependency Scan
+        run: safety scan
+
+      - name: Python Security Scan
+        run: bandit -r .

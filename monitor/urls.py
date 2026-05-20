@@ -9,4 +9,5 @@ urlpatterns = [
     path('monitor/api/pod-logs/', views.api_pod_logs, name='api_pod_logs'),
     path('monitor/api/pod-describe/', views.api_pod_describe, name='api_pod_describe'),
     path('monitor/api/alerts/', views.api_alerts, name='api_alerts'),
+    path('', views.dashboard, name='monitor_dashboard'),
 ]

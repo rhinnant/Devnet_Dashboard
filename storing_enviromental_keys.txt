@@ -1,0 +1,191 @@
+DJANGO .ENV SETUP GUIDE
+=======================
+
+WHAT WE DID
+------------
+We configured Django to use environment variables instead of hardcoding secrets inside settings.py.
+
+This is the standard secure way to configure Django projects.
+
+
+STEP 1 — INSTALL python-dotenv
+-------------------------------
+
+Command:
+
+pip install python-dotenv
+
+Explanation:
+python-dotenv allows Django to read variables from a .env file.
+
+
+STEP 2 — CREATE A .env FILE
+----------------------------
+
+Create a file named:
+
+.env
+
+Place it in the same folder as manage.py
+
+Example structure:
+
+project/
+│
+├── .env
+├── manage.py
+├── venv/
+└── projectname/
+
+
+STEP 3 — GENERATE A SECRET KEY
+-------------------------------
+
+Command:
+
+python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+
+Example output:
+
+#&+rb7z!@5yy@25qd2)q97pulr=t6--imqf&$4=q%iqb%uwhgp
+
+Explanation:
+Django uses SECRET_KEY for:
+- session security
+- CSRF protection
+- password reset tokens
+- cryptographic signing
+
+If SECRET_KEY is empty, Django will crash with:
+
+ImproperlyConfigured:
+The SECRET_KEY setting must not be empty.
+
+
+STEP 4 — ADD VARIABLES TO .env
+-------------------------------
+
+Open .env and add:
+
+SECRET_KEY=#&+rb7z!@5yy@25qd2)q97pulr=t6--imqf&$4=q%iqb%uwhgp
+DEBUG=True
+
+Explanation:
+The .env file stores configuration values separately from code.
+
+Benefits:
+- safer
+- cleaner
+- easier deployment
+- prevents secrets from being uploaded to GitHub
+
+
+STEP 5 — UPDATE settings.py
+----------------------------
+
+Add imports at the top:
+
+import os
+from dotenv import load_dotenv
+
+Then load the .env file:
+
+load_dotenv()
+
+Then configure settings:
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+ALLOWED_HOSTS = ['*']
+
+
+FULL EXAMPLE
+-------------
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+ALLOWED_HOSTS = ['*']
+
+
+STEP 6 — REMOVE DUPLICATE DEBUG LINE
+-------------------------------------
+
+Remove this if it exists:
+
+DEBUG = True
+
+Explanation:
+You should only define DEBUG once.
+
+
+STEP 7 — START DJANGO SERVER
+-----------------------------
+
+Command:
+
+python manage.py runserver
+
+If everything is correct, Django should start normally.
+
+
+STEP 8 — VERIFY SETTINGS
+-------------------------
+
+Command:
+
+python manage.py shell
+
+Then inside shell:
+
+from django.conf import settings
+print(settings.SECRET_KEY)
+print(settings.DEBUG)
+
+Expected:
+- your secret key appears
+- DEBUG prints True
+
+
+WHY THIS METHOD IS IMPORTANT
+-----------------------------
+
+BAD PRACTICE:
+
+SECRET_KEY = "hardcoded-secret"
+
+Problems:
+- secrets may leak to GitHub
+- difficult deployment
+- insecure production setup
+
+
+GOOD PRACTICE:
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+Benefits:
+- secure
+- production-ready
+- configurable
+- industry standard
+
+
+IMPORTANT
+-----------
+
+Add .env to .gitignore
+
+Example:
+
+.env
+
+This prevents secrets from being uploaded to GitHub.

@@ -20,13 +20,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b&6b7!$zru%l*t+^20n@bkpjj5-!xrw=v3=!g%#4n5utojm(q^'
+import os
+from dotenv import load_dotenv
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['*']
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -49,6 +52,7 @@ INSTALLED_APPS = [
     'core',
     'monitor',
     'rest_framework',
+    'scanner',
 ]
 
 MIDDLEWARE = [
@@ -93,6 +97,7 @@ DATABASES = {
 
 
 # Password validation
+SECRET_KEY = "django-insecure-dev-key-12345"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
