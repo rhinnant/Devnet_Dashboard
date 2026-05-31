@@ -1,3 +1,58 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,6 +85,7 @@
             background: #111827;
             border-right: 1px solid #1f2937;
             padding: 25px;
+            overflow-y: auto;
         }
 
         .sidebar h4 {
@@ -103,6 +159,22 @@
             background: #ef4444;
         }
 
+        .badge-critical {
+            background: #dc2626;
+        }
+
+        .badge-high {
+            background: #ea580c;
+        }
+
+        .badge-medium {
+            background: #ca8a04;
+        }
+
+        .badge-low {
+            background: #16a34a;
+        }
+
         /* CODE */
 
         code {
@@ -150,6 +222,26 @@
             color: white;
             border-color: #2563eb;
             box-shadow: none;
+        }
+
+        /* VULNERABILITY CARDS */
+
+        .vuln-card {
+            background: #0f172a;
+            border: 1px solid #1f2937;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .vuln-description {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .scan-section {
+            max-height: 500px;
+            overflow-y: auto;
         }
 
     </style>
@@ -200,8 +292,10 @@
     <a href="/scanner/scans/clear/"
        onclick="return confirm('Delete ALL scans?')"
        class="btn btn-outline-danger w-100">
+
         <i class="bi bi-trash"></i>
         Clear All Scans
+
     </a>
 
 </div>
@@ -213,17 +307,21 @@
     <div class="dashboard-header d-flex justify-content-between align-items-center">
 
         <div>
+
             <h2>Security Operations Dashboard</h2>
 
             <p class="text-secondary">
                 Enterprise vulnerability management platform
             </p>
+
         </div>
 
         <div>
+
             <input type="text"
                    class="form-control search-box"
                    placeholder="Search assets...">
+
         </div>
 
     </div>
@@ -232,31 +330,47 @@
     <div class="row mb-4">
 
         <div class="col-md-3">
+
             <div class="card metric-card p-3 border-danger">
+
                 <h6>Critical</h6>
                 <h2>{{ critical_count }}</h2>
+
             </div>
+
         </div>
 
         <div class="col-md-3">
+
             <div class="card metric-card p-3 border-warning">
+
                 <h6>High</h6>
                 <h2>{{ high_count }}</h2>
+
             </div>
+
         </div>
 
         <div class="col-md-3">
+
             <div class="card metric-card p-3 border-info">
+
                 <h6>Medium</h6>
                 <h2>{{ medium_count }}</h2>
+
             </div>
+
         </div>
 
         <div class="col-md-3">
+
             <div class="card metric-card p-3 border-success">
+
                 <h6>Low</h6>
                 <h2>{{ low_count }}</h2>
+
             </div>
+
         </div>
 
     </div>
@@ -289,12 +403,16 @@
             <table class="table table-dark table-hover align-middle">
 
                 <thead>
+
                     <tr>
+
                         <th>Select</th>
                         <th>Asset</th>
                         <th>Target</th>
                         <th>Actions</th>
+
                     </tr>
+
                 </thead>
 
                 <tbody>
@@ -304,17 +422,23 @@
                     <tr>
 
                         <td>
+
                             <input type="checkbox"
                                    name="asset_ids"
                                    value="{{ asset.id }}">
+
                         </td>
 
                         <td>
+
                             <strong>{{ asset.name }}</strong>
+
                         </td>
 
                         <td>
+
                             <code>{{ asset.target }}</code>
+
                         </td>
 
                         <td>
@@ -342,17 +466,21 @@
     </div>
 
     <!-- SCANS -->
-    <div class="card p-4">
+    <div class="card p-4 scan-section">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
 
             <h5>
+
                 <i class="bi bi-radar"></i>
                 Recent Scans
+
             </h5>
 
             <span class="text-secondary">
+
                 Total Scans: {{ scans|length }}
+
             </span>
 
         </div>
@@ -360,12 +488,16 @@
         <table class="table table-dark table-hover align-middle">
 
             <thead>
+
                 <tr>
+
                     <th>Asset</th>
                     <th>Status</th>
-                    <th>Report</th>
+                    <th>Vulnerabilities</th>
                     <th>Delete</th>
+
                 </tr>
+
             </thead>
 
             <tbody>
@@ -375,7 +507,15 @@
                 <tr>
 
                     <td>
+
                         <strong>{{ scan.asset.name }}</strong>
+
+                        <div class="small text-secondary mt-1">
+
+                            {{ scan.asset.target }}
+
+                        </div>
+
                     </td>
 
                     <td>
@@ -402,22 +542,131 @@
 
                     </td>
 
-                    <td>
+                    <td style="min-width: 450px;">
 
                         {% if scan.status == "completed" %}
 
                             <a href="/scanner/scan/{{ scan.id }}/detail/"
-                               class="btn btn-outline-light btn-sm">
+                               class="btn btn-outline-light btn-sm mb-3">
 
                                 <i class="bi bi-file-earmark-text"></i>
-                                Report
+                                Full Report
 
                             </a>
+
+                            {% if scan.results %}
+
+                                {% for vuln in scan.results %}
+
+                                    <div class="vuln-card">
+
+                                        <div class="d-flex justify-content-between align-items-center">
+
+                                            <div>
+
+                                                <strong class="text-danger">
+
+                                                    {{ vuln.cve_id|default:"Unknown CVE" }}
+
+                                                </strong>
+
+                                            </div>
+
+                                            <div>
+
+                                                {% if vuln.severity == "CRITICAL" %}
+
+                                                    <span class="badge badge-critical">
+                                                        CRITICAL
+                                                    </span>
+
+                                                {% elif vuln.severity == "HIGH" %}
+
+                                                    <span class="badge badge-high">
+                                                        HIGH
+                                                    </span>
+
+                                                {% elif vuln.severity == "MEDIUM" %}
+
+                                                    <span class="badge badge-medium">
+                                                        MEDIUM
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge badge-low">
+                                                        LOW
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="vuln-description mt-2">
+
+                                            {{ vuln.description|default:"No description available." }}
+
+                                        </div>
+
+                                        <div class="mt-2">
+
+                                            <small class="text-secondary">
+
+                                                Service:
+
+                                            </small>
+
+                                            <code>
+
+                                                {{ vuln.service|default:"unknown" }}
+
+                                            </code>
+
+                                        </div>
+
+                                        {% if vuln.cvss %}
+
+                                            <div class="mt-1">
+
+                                                <small class="text-secondary">
+
+                                                    CVSS Score:
+
+                                                </small>
+
+                                                <strong>
+
+                                                    {{ vuln.cvss }}
+
+                                                </strong>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <div class="text-success">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    No vulnerabilities found
+
+                                </div>
+
+                            {% endif %}
 
                         {% else %}
 
                             <span class="text-muted">
-                                Pending
+
+                                Pending scan results...
+
                             </span>
 
                         {% endif %}

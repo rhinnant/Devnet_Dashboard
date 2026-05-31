@@ -1,43 +1,66 @@
 import requests
 
 
-def get_cves_for_keyword(keyword):
+def search_cves(query):
+
+    vulnerabilities = []
 
     try:
 
-        url = (
-            f"https://services.nvd.nist.gov/rest/json/cves/2.0"
-            f"?keywordSearch={keyword}"
-        )
+        url = f"https://cve.circl.lu/api/search/{query}"
 
-        response = requests.get(url, timeout=10)
+        response = requests.get(
+            url,
+            timeout=15
+        )
 
         data = response.json()
 
-        results = []
+        results = data.get("results", [])
 
-        for item in data.get("vulnerabilities", [])[:5]:
+        for item in results[:10]:
 
-            cve = item["cve"]
+            summary = item.get(
+                "summary",
+                "No description"
+            )
 
-            metrics = cve.get("metrics", {})
+            cvss = item.get(
+                "cvss",
+                0
+            )
 
-            cvss = 0
+            # Severity Logic
+            severity = "Low"
 
-            if "cvssMetricV31" in metrics:
+            if cvss >= 9:
+                severity = "Critical"
 
-                cvss = metrics["cvssMetricV31"][0]["cvssData"]["baseScore"]
+            elif cvss >= 7:
+                severity = "High"
 
-            description = cve["descriptions"][0]["value"]
+            elif cvss >= 4:
+                severity = "Medium"
 
-            results.append({
-                "cve_id": cve["id"],
-                "description": description,
+            vulnerabilities.append({
+
+                "id": item.get(
+                    "id",
+                    "UNKNOWN"
+                ),
+
+                "summary": summary,
+
+                "severity": severity,
+
                 "cvss": cvss
             })
 
-        return results
+    except Exception as e:
 
-    except Exception:
+        print("")
+        print("CVE API ERROR")
+        print(e)
+        print("")
 
-        return []
+    return vulnerabilities

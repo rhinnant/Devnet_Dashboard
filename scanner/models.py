@@ -2,46 +2,39 @@ from django.db import models
 
 
 class Asset(models.Model):
-
-    name = models.CharField(max_length=100)
-
+    name = models.CharField(max_length=255)
     target = models.CharField(max_length=255)
-
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
 
 class Scan(models.Model):
-
     asset = models.ForeignKey(
         Asset,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="scans"
     )
 
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, default="running")
+
+    output = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.asset.name} - {self.status}"
+        return f"Scan {self.id} - {self.asset.name}"
 
 
 class Vulnerability(models.Model):
-
     scan = models.ForeignKey(
         Scan,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="vulnerabilities"
     )
 
-    cve = models.CharField(max_length=100)
-
-    title = models.TextField()
-
-    severity = models.CharField(max_length=20)
-
-    raw_output = models.TextField(blank=True)
+    name = models.CharField(max_length=255)
+    severity = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.cve
+        return self.name

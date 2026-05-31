@@ -1,43 +1,65 @@
-import subprocess
-import re
+import socket
 
 
-def run_nmap(target):
+COMMON_PORTS = [
+    21,
+    22,
+    23,
+    25,
+    53,
+    80,
+    110,
+    139,
+    143,
+    443,
+    445,
+    3389
+]
 
-    result = subprocess.run(
-        ["/usr/bin/nmap", "-sV", target],
-        capture_output=True,
-        text=True
-    )
 
-    return result.stdout
+def run_scan(scan):
 
+    target = scan.asset.target
 
-def extract_services(output):
+    print(f"Scanning target: {target}")
 
     services = []
 
-    lines = output.splitlines()
+    for port in COMMON_PORTS:
 
-    for line in lines:
-
-        match = re.search(
-            r"(\d+)/tcp\s+open\s+(\S+)\s+(.*)",
-            line
+        sock = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_STREAM
         )
 
-        if match:
+        sock.settimeout(1)
 
-            port = match.group(1)
+        result = sock.connect_ex(
+            (target, port)
+        )
 
-            service = match.group(2)
+        if result == 0:
 
-            version = match.group(3)
+            try:
+                service = socket.getservbyport(port)
+
+            except:
+                service = "unknown"
 
             services.append({
                 "port": port,
-                "product": service,
-                "version": version
+                "service": service
             })
 
-    return services
+        sock.close()
+
+    print("\n=== SERVICES FOUND ===")
+    print(services)
+
+    scan.output = str(services)
+
+    scan.status = "completed"
+
+    scan.save()
+
+    print("\nScan completed.")

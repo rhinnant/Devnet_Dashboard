@@ -3,3 +3,5 @@ gunicorn==25.3.0
 djangorestframework
 requests
 packaging==26.2
+python-dotenv==1.0.1
+kubernetes==30.1.0
