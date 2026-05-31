@@ -1,38 +1,28 @@
-name: Docker CI/CD Pipeline
+name: Simple CI
 
 on:
   push:
     branches: [ main ]
-
-env:
-  IMAGE_NAME: ghcr.io/rhinnant/django-app
-  IMAGE_TAG: latest
+  pull_request:
 
 jobs:
-  build-and-push:
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Build Docker image
-        run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
-
-      - name: Push Docker image
-        run: docker push $IMAGE_NAME:$IMAGE_TAG
-
-      - name: Update Kubernetes deployment image
+      - name: Install dependencies
         run: |
-          sed -i "s|image: ghcr.io/rhinnant/django-app:.*|image: ghcr.io/rhinnant/django-app:${GITHUB_SHA}|g" k8s/deployment.yaml
+          python -m pip install --upgrade pip
+          pip install django
 
-      - name: Commit updated manifest
+      - name: Run Django checks
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add k8s/deployment.yaml
-          git commit -m "Update image tag to ${GITHUB_SHA}" || echo "No changes"
-          git push
+          python manage.py check
