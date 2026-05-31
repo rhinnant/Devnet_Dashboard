@@ -1,15 +1,29 @@
-stages:
-  - scan
-  - test
+name: CI Pipeline
 
-bandit:
-  stage: scan
-  script:
-    - pip install bandit
-    - bandit -r .
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
-safety:
-  stage: scan 
-  script:
-   - pip install safety
-   - safety check
+jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit
+        run: bandit -r .
+
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Safety
+        run: pip install safety
+
+      - name: Run Safety
+        run: safety check
