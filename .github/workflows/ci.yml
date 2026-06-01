@@ -1,28 +1,34 @@
-name: Simple CI
+name: Django CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
 
 jobs:
-  test:
+  django-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install django
 
-      - name: Run Django checks
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install django
+          fi
+
+      - name: Django System Check
         run: |
           python manage.py check
